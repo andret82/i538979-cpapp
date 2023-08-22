@@ -1,0 +1,109 @@
+_schema-version: '3.1'
+ID: i538979-cpapp
+version: 1.0.0
+description: 'A simple CAP project.'
+parameters:
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm install --production
+        - cds build --production
+        - npx rimraf gen/db/src/gen/data
+modules:
+  - name: i538979-cpapp-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      buildpack: nodejs_buildpack
+    build-parameters:
+      builder: npm
+    provides:
+      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+        properties:
+          srv-url: ${default-url}
+    requires:
+      - name: i538979-cpapp-uaa
+      - name: i538979-cpapp-db
+  - name: i538979-cpapp-db-deployer
+    type: hdb
+    path: gen/db
+    parameters:
+      buildpack: nodejs_buildpack
+    requires:
+      - name: i538979-cpapp-db
+  - name: i538979-cpapp-destinations
+    type: com.sap.application.content
+    requires:
+      - name: i538979-cpapp-uaa
+        parameters:
+          service-key:
+            name: i538979-cpapp-uaa-key
+      - name: i538979-cpapp-html5-repo-host
+        parameters:
+          service-key:
+            name: i538979-cpapp-html5-repo-host-key
+      - name: srv-api
+      - name: i538979-cpapp-destination
+        parameters:
+          content-target: true
+    parameters:
+      content:
+        instance:
+          destinations:
+            - Authentication: OAuth2UserTokenExchange
+              Name: i538979-cpapp-app-srv
+              TokenServiceInstanceName: i538979-cpapp-uaa
+              TokenServiceKeyName: i538979-cpapp-uaa-key
+              URL: '~{srv-api/srv-url}'
+              sap.cloud.service: i538979-cpapp.service
+            - Name: i538979-cpapp-html5-repo-host
+              ServiceInstanceName: i538979-cpapp-html5-repo-host
+              ServiceKeyName: i538979-cpapp-html5-repo-host-key
+              sap.cloud.service: i538979-cpapp.service
+            - Authentication: OAuth2UserTokenExchange
+              Name: i538979-cpapp-uaa
+              ServiceInstanceName: i538979-cpapp-uaa
+              ServiceKeyName: i538979-cpapp-uaa-key
+              sap.cloud.service: i538979-cpapp.service
+          existing_destinations_policy: update
+    build-parameters:
+      no-source: true
+
+resources:
+  - name: i538979-cpapp-uaa
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: i538979-cpapp-${org}-${space}
+        tenant-mode: dedicated
+        role-collections:
+          - name: 'RiskManager-${space}-i538979'
+            description: Manage Risks
+            role-template-references:
+              - $XSAPPNAME.RiskManager
+          - name: 'RiskViewer-${space}-i538979'
+            description: View Risks
+            role-template-references:
+              - $XSAPPNAME.RiskViewer
+  - name: i538979-cpapp-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+  - name: i538979-cpapp-destination
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite
+      config:
+        HTML5Runtime_enabled: true
+  - name: i538979-cpapp-html5-repo-host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-host
