@@ -57,19 +57,57 @@ modules:
               TokenServiceInstanceName: i538979-cpapp-uaa
               TokenServiceKeyName: i538979-cpapp-uaa-key
               URL: '~{srv-api/srv-url}'
-              sap.cloud.service: i538979-cpapp.service
+              sap.cloud.service: i538979cpapp.service
             - Name: i538979-cpapp-html5-repo-host
               ServiceInstanceName: i538979-cpapp-html5-repo-host
               ServiceKeyName: i538979-cpapp-html5-repo-host-key
-              sap.cloud.service: i538979-cpapp.service
+              sap.cloud.service: i538979cpapp.service
             - Authentication: OAuth2UserTokenExchange
               Name: i538979-cpapp-uaa
               ServiceInstanceName: i538979-cpapp-uaa
               ServiceKeyName: i538979-cpapp-uaa-key
-              sap.cloud.service: i538979-cpapp.service
+              sap.cloud.service: i538979cpapp.service
           existing_destinations_policy: update
     build-parameters:
       no-source: true
+  - name: nsrisks
+    type: html5
+    path: app/risks
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npm run build:cf
+      supported-platforms: []
+  - name: nsmitigations
+    type: html5
+    path: app/mitigations
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npm run build:cf
+      supported-platforms: []
+  - name: i583979-cpapp-app-content
+    type: com.sap.application.content
+    path: .
+    requires:
+      - name: i538979-cpapp-html5-repo-host
+        parameters:
+          content-target: true
+    build-parameters:
+      build-result: resources
+      requires:
+        - artifacts:
+            - nsrisks.zip
+          name: nsrisks
+          target-path: resources/
+        - artifacts:
+            - nsmitigations.zip
+          name: nsmitigations
+          target-path: resources/
 
 resources:
   - name: i538979-cpapp-uaa
