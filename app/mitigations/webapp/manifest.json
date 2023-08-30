@@ -1,7 +1,7 @@
 {
   "_version": "1.49.0",
   "sap.app": {
-    "id": "ns.mitigations",
+    "id": "ns.mitigationsi538979",
     "type": "application",
     "i18n": "i18n/i18n.properties",
     "applicationVersion": {
@@ -78,7 +78,7 @@
       "i18n": {
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
-          "bundleName": "ns.mitigations.i18n.i18n"
+          "bundleName": "ns.mitigationsi538979.i18n.i18n"
         }
       },
       "": {
@@ -99,7 +99,7 @@
       "config": {
         "routerClass": "sap.m.routing.Router",
         "viewType": "XML",
-        "viewPath": "ns.mitigations.view",
+        "viewPath": "ns.mitigationsi538979.view",
         "controlId": "app",
         "controlAggregation": "pages",
         "bypassed": {
@@ -143,7 +143,7 @@
       }
     },
     "rootView": {
-      "viewName": "ns.mitigations.view.App",
+      "viewName": "ns.mitigationsi538979.view.App",
       "type": "XML",
       "async": true,
       "id": "app"

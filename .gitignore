@@ -131,3 +131,7 @@ dist/
 resources/
 app/*/package-lock.json
 
+.vscode
+.*_mta_build_tmp
+*.mtar
+
